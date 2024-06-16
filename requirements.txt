@@ -6,3 +6,4 @@ scikit-learn
 pandas
 requests
 python-dotenv
+Flask-HTTPAuth

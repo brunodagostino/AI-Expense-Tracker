@@ -2,6 +2,7 @@ from datetime import datetime
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+from flask_httpauth import HTTPTokenAuth
 
 from ai_model import predict_expense
 from config import Config
@@ -12,6 +13,15 @@ app = Flask(__name__)
 app.config.from_object(Config)
 init_db(app)
 CORS(app)
+
+auth = HTTPTokenAuth(scheme="Bearer")
+
+
+@auth.verify_token
+def verify_token(token):
+    if token in app.config["API_KEY"]:
+        return token
+    return None
 
 
 @app.errorhandler(404)
@@ -25,6 +35,7 @@ def server_error(error):
 
 
 @app.route("/expenses", methods=["POST"])
+@auth.login_required
 def add_expense():
     data = request.get_json()
     amount = data.get("amount")
@@ -44,6 +55,7 @@ def add_expense():
 
 
 @app.route("/expenses", methods=["GET"])
+@auth.login_required
 def get_expenses():
     query = request.args.get("q", "")
     filters = parse_query(query)
@@ -106,6 +118,7 @@ def parse_query(query):
 
 
 @app.route("/expenses/<int:expense_id>", methods=["GET"])
+@auth.login_required
 def get_expense(expense_id):
     expense = Expense.query.get_or_404(expense_id)
     return jsonify(
@@ -121,6 +134,7 @@ def get_expense(expense_id):
 
 
 @app.route("/predict_expense/<category>", methods=["GET"])
+@auth.login_required
 def get_predicted_expense(category):
     try:
         predicted_amount = predict_expense(category)
