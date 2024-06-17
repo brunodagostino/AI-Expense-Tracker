@@ -1,6 +1,6 @@
 # AI-Powered Expense Tracker API
 
-This is an AI-powered expense tracker API built using Flask. It allows users to track expenses, view expense summaries, and get expense predictions based on historical data.
+This is an AI-powered expense tracker API built using Flask and using SQLite as the database.
 
 ## Features
 
@@ -8,22 +8,16 @@ This is an AI-powered expense tracker API built using Flask. It allows users to 
 - **View Expenses:** Retrieve a list of all recorded expenses.
 - **View Single Expense:** Retrieve details of a single expense by its ID.
 - **Predict Expense:** Get a predicted expense amount for a given category using a simple AI model.
-- **Error Handling:** Robust error handling for common issues.
-- **Security Measures:** Basic security measures including CORS and graceful error handling.
+- **API Key Authentication:** Secure API endpoints with API key authentication.
 
 ## Requirements
 
 - Python 3.7+
 - Flask
-- Flask-SQLAlchemy
-- Flask-Migrate
-- Flask-CORS
-- Scikit-learn
-- Pandas
-- Requests
-- python-dotenv
 
 ## Installation
+
+### Local Setup
 
 1. **Clone the Repository:**
 
@@ -35,8 +29,8 @@ This is an AI-powered expense tracker API built using Flask. It allows users to 
 2. **Create a Virtual Environment:**
 
     ```bash
-    python -m venv venv
-    source venv/bin/activate  # On Windows use `venv\Scripts\activate`
+    python3 -m venv venv
+    source venv/bin/activate
     ```
 
 3. **Install Dependencies:**
@@ -45,18 +39,29 @@ This is an AI-powered expense tracker API built using Flask. It allows users to 
     pip install -r requirements.txt
     ```
 
-4. **Set Up the Database:**
+4. **Set Up Environment Variables:**
 
-    ```bash
-    flask db init
-    flask db migrate -m "Initial migration."
-    flask db upgrade
+    Create a `.env` file in the project root with the following content:
+
+    ```ini
+    SECRET_KEY=your_secret_key
+    DATABASE_URL=sqlite:///expenses.db
+    API_KEYS=your_api_key
     ```
 
-5. **Run the Application:**
+5. **Initialize the Database:**
 
     ```bash
-    python app.py
+    flask shell
+    from app import db
+    db.create_all()
+    exit()
+    ```
+
+6. **Run the Application:**
+
+    ```bash
+    flask run
     ```
 
 ## API Endpoints
@@ -66,6 +71,7 @@ This is an AI-powered expense tracker API built using Flask. It allows users to 
 - **URL:** `/expenses`
 - **Method:** `POST`
 - **Body:**
+
     ```json
     {
         "amount": 25.5,
@@ -74,7 +80,9 @@ This is an AI-powered expense tracker API built using Flask. It allows users to 
         "currency": "USD"
     }
     ```
+
 - **Response:**
+
     ```json
     {
         "id": 1
@@ -86,6 +94,7 @@ This is an AI-powered expense tracker API built using Flask. It allows users to 
 - **URL:** `/expenses`
 - **Method:** `GET`
 - **Response:**
+
     ```json
     [
         {
@@ -104,6 +113,7 @@ This is an AI-powered expense tracker API built using Flask. It allows users to 
 - **URL:** `/expenses/{expense_id}`
 - **Method:** `GET`
 - **Response:**
+
     ```json
     {
         "id": 1,
@@ -120,6 +130,7 @@ This is an AI-powered expense tracker API built using Flask. It allows users to 
 - **URL:** `/predict_expense/{category}`
 - **Method:** `GET`
 - **Response:**
+
     ```json
     {
         "category": "food",
@@ -130,6 +141,7 @@ This is an AI-powered expense tracker API built using Flask. It allows users to 
 ## Error Handling
 
 - **404 Not Found:**
+
     ```json
     {
         "error": "Not found"
@@ -137,6 +149,7 @@ This is an AI-powered expense tracker API built using Flask. It allows users to 
     ```
 
 - **500 Server Error:**
+
     ```json
     {
         "error": "Server error"
@@ -145,7 +158,7 @@ This is an AI-powered expense tracker API built using Flask. It allows users to 
 
 ## Configuration
 
-The application uses a configuration file (`config.py`) to manage settings. Update the `SECRET_KEY` and `SQLALCHEMY_DATABASE_URI` as needed.
+The application uses environment variables for configuration. Update the `.env` file for local development.
 
 ## License
 
@@ -154,13 +167,10 @@ This project is licensed under the GNU License. See the [LICENSE](LICENSE) file 
 ## Acknowledgements
 
 This project uses the following libraries:
+
 - [Flask](https://flask.palletsprojects.com/)
 - [Flask-SQLAlchemy](https://flask-sqlalchemy.palletsprojects.com/)
-- [Flask-Migrate](https://flask-migrate.readthedocs.io/)
-- [Flask-CORS](https://flask-cors.readthedocs.io/)
-- [Scikit-learn](https://scikit-learn.org/)
-- [Pandas](https://pandas.pydata.org/)
-- [Requests](https://requests.readthedocs.io/)
+- [Flask-HTTPAuth](https://flask-httpauth.readthedocs.io/)
 
 ## Contributing
 

@@ -14,12 +14,15 @@ app.config.from_object(Config)
 init_db(app)
 CORS(app)
 
+with app.app_context():
+    db.create_all()
+
 auth = HTTPTokenAuth(scheme="Bearer")
 
 
 @auth.verify_token
 def verify_token(token):
-    if token in app.config["API_KEY"]:
+    if token == app.config["API_KEY"]:
         return token
     return None
 
@@ -57,8 +60,17 @@ def add_expense():
 @app.route("/expenses", methods=["GET"])
 @auth.login_required
 def get_expenses():
-    query = request.args.get("q", "")
-    filters = parse_query(query)
+    amount = request.args.get("amount")
+    category = request.args.get("category")
+    currency = request.args.get("currency")
+    description = request.args.get("description")
+    after = request.args.get("after")
+    before = request.args.get("before")
+    date_range = request.args.get("date_range")
+
+    filters = parse_query(
+        amount, category, currency, description, after, before, date_range
+    )
 
     expenses = Expense.query.filter_by(**filters).all()
     return jsonify(
@@ -76,29 +88,22 @@ def get_expenses():
     )
 
 
-def parse_query(query):
+def parse_query(amount, category, currency, description, after, before, date_range):
     filters = {}
-    if query:
-        queries = query.split(" ")
-        for q in queries:
-            if ":" in q:
-                key, value = q.split(":", 1)
-                if key == "amount":
-                    filters["amount"] = float(value)
-                elif key == "category":
-                    filters["category"] = value
-                elif key == "currency":
-                    filters["currency"] = value
-                elif key == "date":
-                    filters["date"] = datetime.strptime(value, "%Y-%m-%d %H:%M:%S")
-                elif key == "description":
-                    filters["description"] = value
-                elif key == "after":
-                    filters["date"] = filters.get("date", {})
-                    filters["date"]["$gte"] = datetime.strptime(value, "%Y/%m/%d")
-                elif key == "before":
-                    filters["date"] = filters.get("date", {})
-                    filters["date"]["$lte"] = datetime.strptime(value, "%Y/%m/%d")
+    if amount:
+        filters["amount"] = float(amount)
+    if category:
+        filters["category"] = category
+    if currency:
+        filters["currency"] = currency
+    if description:
+        filters["description"] = description
+    if after:
+        filters["date"] = filters.get("date", {})
+        filters["date"]["$gte"] = datetime.strptime(after, "%Y-%m-%d")
+    if before:
+        filters["date"] = filters.get("date", {})
+        filters["date"]["$lte"] = datetime.strptime(before, "%Y-%m-%d")
 
     # Handle combined date filters
     if "date" in filters:
