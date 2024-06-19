@@ -1,0 +1,236 @@
+openapi: 3.1.0
+info:
+  title: Expense Tracker API
+  description: API for managing and predicting expenses.
+  version: 1.0.0
+servers:
+  - url: https://example.com
+    description: Server
+paths:
+  /expenses:
+    post:
+      operationId: addExpense
+      summary: Add a new expense
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                amount:
+                  type: number
+                  format: float
+                category:
+                  type: string
+                description:
+                  type: string
+                currency:
+                  type: string
+                  default: USD
+              required:
+                - amount
+                - category
+      responses:
+        "201":
+          description: Expense created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    get:
+      operationId: getExpenses
+      summary: Retrieve expenses
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: amount
+          in: query
+          description: Filter expenses by amount.
+          required: false
+          schema:
+            type: number
+            format: float
+        - name: category
+          in: query
+          description: Filter expenses by category.
+          required: false
+          schema:
+            type: string
+        - name: currency
+          in: query
+          description: Filter expenses by currency.
+          required: false
+          schema:
+            type: string
+        - name: description
+          in: query
+          description: Filter expenses by description.
+          required: false
+          schema:
+            type: string
+        - name: after
+          in: query
+          description: Filter expenses after this date (YYYY-MM-DD).
+          required: false
+          schema:
+            type: string
+        - name: before
+          in: query
+          description: Filter expenses before this date (YYYY-MM-DD).
+          required: false
+          schema:
+            type: string
+      responses:
+        "200":
+          description: A list of expenses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: integer
+                    amount:
+                      type: number
+                      format: float
+                    category:
+                      type: string
+                    description:
+                      type: string
+                    date:
+                      type: string
+                      format: date-time
+                    currency:
+                      type: string
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /expenses/{expense_id}:
+    get:
+      operationId: getExpense
+      summary: Get a specific expense by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: expense_id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: An expense
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  amount:
+                    type: number
+                    format: float
+                  category:
+                    type: string
+                  description:
+                    type: string
+                  date:
+                    type: string
+                    format: date-time
+                  currency:
+                    type: string
+        "404":
+          description: Expense not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+  /predict_expense/{category}:
+    get:
+      operationId: getPredictedExpense
+      summary: Get predicted expense amount for a category
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: category
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Predicted expense amount
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  category:
+                    type: string
+                  predicted_amount:
+                    type: number
+                    format: float
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Expense:
+      type: object
+      properties:
+        id:
+          type: integer
+        amount:
+          type: number
+          format: float
+        category:
+          type: string
+        description:
+          type: string
+        date:
+          type: string
+          format: date-time
+        currency:
+          type: string
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
